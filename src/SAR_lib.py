@@ -158,7 +158,9 @@ class SAR_Project:
         ##########################################
         """print(self.docs)
         print(self.news)
-        print(self.index)"""
+        print(self.index)
+        print(self.reverse_posting([5, 6, 10, 800, 801, 802]))
+        print(self.and_posting([5, 6, 10, 800, 801, 802], [6, 7, 8, 9, 10, 50, 100, 801]))"""
         
 
     def index_file(self, filename):
@@ -282,10 +284,14 @@ class SAR_Project:
         print("========================================")
         print("Number of indexed days: " )
         print("----------------------------------------")
-        print("Number of indexed news: " + self.newID)
+        print("Number of indexed news: " + str(len(self.news)))
         print("----------------------------------------")
         print("TOKENS:")
+<<<<<<< HEAD
         print("\t # of tokens in 'article': "+ len(self.index.keys))
+=======
+        print("\t # of tokens in 'article': " + str(len(self.index)))
+>>>>>>> fdbb4d8c09ca7cac8e2d8a7b1c62518f9cc8bada
         print("----------------------------------------")
         print("========================================")
         
@@ -450,8 +456,13 @@ class SAR_Project:
         return: posting list con todos los newid exceptos los contenidos en p
 
         """
-        
-        pass
+
+        res = []
+        for newID in self.news.keys():
+            if newID not in p:
+                res += [newID]
+
+        return res
         ########################################
         ## COMPLETAR PARA TODAS LAS VERSIONES ##
         ########################################
@@ -471,7 +482,12 @@ class SAR_Project:
 
         """
         
-        pass
+        res = []
+        for newID2 in p2:
+            if newID2 in p1:
+                res += [newID2]
+
+        return res
         ########################################
         ## COMPLETAR PARA TODAS LAS VERSIONES ##
         ########################################
