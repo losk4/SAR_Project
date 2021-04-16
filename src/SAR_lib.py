@@ -285,7 +285,7 @@ class SAR_Project:
         print("Number of indexed news: " + self.newID)
         print("----------------------------------------")
         print("TOKENS:")
-        print("\t # of tokens in 'article': "+len(self.index.keys))
+        print("\t # of tokens in 'article': "+ len(self.index.keys))
         print("----------------------------------------")
         print("========================================")
         
@@ -312,16 +312,47 @@ class SAR_Project:
         return: posting list con el resultado de la query
 
         """
-
+        
         if query is None or len(query) == 0:
             return []
 
         ########################################
         ## COMPLETAR PARA TODAS LAS VERSIONES ##
         ########################################
+        querylist= query.split()
+        lon = len(querylist)
+        aux = 0
+        res = []
 
- 
+        while aux < lon:
+            if querylist[aux] == 'NOT':
+                res = self.reverse_posting(self.index[querylist[aux+1]])
+                aux += 2 
 
+            elif aux + 1 = lon:
+                res = self.get_posting(self.index[querylist[aux]])
+                break
+                           
+            else:
+                if querylist[aux] == 'AND':
+                    if querylist[aux+1] == 'NOT':
+                        no = self.reverse_posting(self.index[querylist[aux+2]])
+                        res = self.and_posting(res, no)
+                        aux += 3
+                    else:
+                        res = self.and_posting(res, self.index[querylist[aux+1]])
+                        aux += 2
+                if querylist[aux] == 'OR':
+                    if querylist[aux+1] == 'NOT':
+                        no = self.reverse_posting(self.index[querylist[aux+2]])
+                        res = self.or_posting(res, no)
+                        aux += 3
+                    else:
+                        res = self.or_posting(res, self.index[querylist[aux+1]])
+                        aux += 2
+                if querylist[aux] != 'OR' AND querylist[aux] != 'AND':
+                    res = self.get_posting(self.index[querylist[aux]])
+                    aux += 1
 
     def get_posting(self, term, field='article'):
         """
