@@ -159,7 +159,8 @@ class SAR_Project:
         """print(self.docs)
         print(self.news)
         print(self.index)
-        print(self.reverse_posting([5, 6, 10, 800, 801, 802]))"""
+        print(self.reverse_posting([5, 6, 10, 800, 801, 802]))
+        print(self.and_posting([5, 6, 10, 800, 801, 802], [6, 7, 8, 9, 10, 50, 100, 801]))"""
         
 
     def index_file(self, filename):
@@ -446,7 +447,12 @@ class SAR_Project:
 
         """
         
-        pass
+        res = []
+        for newID2 in p2:
+            if newID2 in p1:
+                res += [newID2]
+
+        return res
         ########################################
         ## COMPLETAR PARA TODAS LAS VERSIONES ##
         ########################################
