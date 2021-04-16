@@ -282,10 +282,10 @@ class SAR_Project:
         print("========================================")
         print("Number of indexed days: " )
         print("----------------------------------------")
-        print("Number of indexed news: " + self.newID)
+        print("Number of indexed news: " + str(len(self.news)))
         print("----------------------------------------")
         print("TOKENS:")
-        print("\t # of tokens in 'article': "+len(self.index.keys))
+        print("\t # of tokens in 'article': " + str(len(self.index)))
         print("----------------------------------------")
         print("========================================")
         
