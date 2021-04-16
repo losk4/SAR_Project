@@ -158,7 +158,8 @@ class SAR_Project:
         ##########################################
         """print(self.docs)
         print(self.news)
-        print(self.index)"""
+        print(self.index)
+        print(self.reverse_posting([5, 6, 10, 800, 801, 802]))"""
         
 
     def index_file(self, filename):
@@ -419,8 +420,13 @@ class SAR_Project:
         return: posting list con todos los newid exceptos los contenidos en p
 
         """
-        
-        pass
+
+        res = []
+        for newID in self.news.keys():
+            if newID not in p:
+                res += [newID]
+
+        return res
         ########################################
         ## COMPLETAR PARA TODAS LAS VERSIONES ##
         ########################################
