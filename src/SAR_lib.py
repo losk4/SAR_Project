@@ -1,5 +1,5 @@
 import json
-from nltk.stem.snowball import SnowballStemmer
+# from nltk.stem.snowball import SnowballStemmer
 import os
 import re
 
@@ -45,11 +45,16 @@ class SAR_Project:
         self.weight = {} # hash de terminos para el pesado, ranking de resultados. puede no utilizarse
         self.news = {} # hash de noticias --> clave entero (newid), valor: la info necesaria para diferenciar la noticia dentro de su fichero (doc_id y posición dentro del documento)
         self.tokenizer = re.compile("\W+") # expresion regular para hacer la tokenizacion
-        self.stemmer = SnowballStemmer('spanish') # stemmer en castellano
+        # self.stemmer = SnowballStemmer('spanish') # stemmer en castellano
         self.show_all = False # valor por defecto, se cambia con self.set_showall()
         self.show_snippet = False # valor por defecto, se cambia con self.set_snippet()
         self.use_stemming = False # valor por defecto, se cambia con self.set_stemming()
         self.use_ranking = False  # valor por defecto, se cambia con self.set_ranking()
+
+        #
+        self.docID = 1
+        self.newID = 1
+        #
 
 
     ###############################
@@ -151,6 +156,9 @@ class SAR_Project:
         ##########################################
         ## COMPLETAR PARA FUNCIONALIDADES EXTRA ##
         ##########################################
+        """print(self.docs)
+        print(self.news)
+        print(self.index)"""
         
 
     def index_file(self, filename):
@@ -169,6 +177,7 @@ class SAR_Project:
 
         """
 
+        
         with open(filename) as fh:
             jlist = json.load(fh)
 
@@ -184,6 +193,23 @@ class SAR_Project:
         #################
         ### COMPLETAR ###
         #################
+
+        pos = 1
+        self.docs[self.docID] = filename
+
+        for new in jlist:
+            self.news[self.newID] = [self.docID, pos]
+            pos += 1
+            content = new["article"]
+            tokens = set(self.tokenize(content))
+
+            for token in tokens:
+                if token not in self.index.keys():
+                    self.index[token] = []
+                self.index[token].append(self.newID)
+
+            self.newID += 1
+        self.docID += 1
 
 
 
