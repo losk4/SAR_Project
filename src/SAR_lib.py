@@ -333,11 +333,13 @@ class SAR_Project:
         while aux < lon:
             if querylist[aux] == 'NOT':
                 res = self.reverse_posting(self.index[querylist[aux+1]])
+                if aux + 2 == lon:
+                    return res
                 aux += 2 
 
             elif aux + 1 = lon:
                 res = self.get_posting(self.index[querylist[aux]])
-                break
+                return res
                            
             else:
                 if querylist[aux] == 'AND':
@@ -359,6 +361,8 @@ class SAR_Project:
                 if querylist[aux] != 'OR' AND querylist[aux] != 'AND':
                     res = self.get_posting(self.index[querylist[aux]])
                     aux += 1
+                    
+        return res
 
     def get_posting(self, term, field='article'):
         """
