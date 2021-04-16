@@ -194,6 +194,13 @@ class SAR_Project:
         ### COMPLETAR ###
         #################
 
+        """
+        Proceso de indexado:
+        self.docs = {clave: docID, valor: filename}
+        self.news = {clave: newID, valor: [docID, pos]}
+        self.index = {clave: término, valor: [(docID)*] (la posting list básicamente)}
+        Los ID's empiezan en 1 por defecto
+        """
         pos = 1
         self.docs[self.docID] = filename
 
