@@ -167,7 +167,7 @@ class SAR_Project:
         #print(self.and_posting([5, 6, 10, 800, 801, 802], [6, 7, 8, 9, 10, 50, 100, 801]))
         #print("---------")
         #print(self.reverse_posting(self.and_posting([5, 6, 10, 800, 801, 802], [6, 7, 8, 9, 10, 50, 100, 801])))
-        #print("---------")
+        # print("---------")
         #print(self.and_posting([5, 6, 10, 800, 801, 802], self.reverse_posting(self.and_posting([5, 6, 10, 800, 801, 802], [6, 7, 8, 9, 10, 50, 100, 801]))))
         
 
