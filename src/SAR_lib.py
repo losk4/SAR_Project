@@ -156,11 +156,11 @@ class SAR_Project:
         ##########################################
         ## COMPLETAR PARA FUNCIONALIDADES EXTRA ##
         ##########################################
-        """print(self.docs)
-        print(self.news)
-        print(self.index)
-        print(self.reverse_posting([5, 6, 10, 800, 801, 802]))
-        print(self.and_posting([5, 6, 10, 800, 801, 802], [6, 7, 8, 9, 10, 50, 100, 801]))"""
+        #print(self.docs)
+        #print(self.news.keys())
+        #print(self.index)
+        #print(self.reverse_posting([5, 6, 10, 800, 801, 802]))
+        #print(self.and_posting([5, 6, 10, 800, 801, 802], [6, 7, 8, 9, 10, 50, 100, 801]))
         
 
     def index_file(self, filename):
@@ -287,11 +287,7 @@ class SAR_Project:
         print("Number of indexed news: " + str(len(self.news)))
         print("----------------------------------------")
         print("TOKENS:")
-<<<<<<< HEAD
-        print("\t # of tokens in 'article': "+ len(self.index.keys))
-=======
         print("\t # of tokens in 'article': " + str(len(self.index)))
->>>>>>> fdbb4d8c09ca7cac8e2d8a7b1c62518f9cc8bada
         print("----------------------------------------")
         print("========================================")
         
@@ -337,7 +333,7 @@ class SAR_Project:
                     return res
                 aux += 2 
 
-            elif aux + 1 = lon:
+            elif aux + 1 == lon:
                 res = self.get_posting(self.index[querylist[aux]])
                 return res
                            
@@ -358,7 +354,7 @@ class SAR_Project:
                     else:
                         res = self.or_posting(res, self.index[querylist[aux+1]])
                         aux += 2
-                if querylist[aux] != 'OR' AND querylist[aux] != 'AND':
+                if querylist[aux] != 'OR' and querylist[aux] != 'AND':
                     res = self.get_posting(self.index[querylist[aux]])
                     aux += 1
                     
@@ -461,12 +457,23 @@ class SAR_Project:
 
         """
 
+        #res = []
+        #for newID in self.news.keys():
+        #    if newID not in p:
+        #        res += [newID]
+        #
+        #return res
+
         res = []
+        pID = 0
         for newID in self.news.keys():
-            if newID not in p:
+            if not(pID == len(p) or newID >= p[pID]):
                 res += [newID]
+            else:
+                pID += 1
 
         return res
+
         ########################################
         ## COMPLETAR PARA TODAS LAS VERSIONES ##
         ########################################
