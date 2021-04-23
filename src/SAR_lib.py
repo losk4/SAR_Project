@@ -161,7 +161,14 @@ class SAR_Project:
         #print(self.index)
         #print(self.reverse_posting([5, 6, 10, 800, 801, 802]))
         #print(self.and_posting([5, 6, 10, 800, 801, 802], [6, 7, 8, 9, 10, 50, 100, 801]))
-        print(self.or_posting([5, 6, 10, 800, 801, 802], [6, 7, 8, 9, 10, 50, 100, 801]))
+        #print(self.or_posting([5, 6, 10, 800, 801, 802], [6, 7, 8, 9, 10, 50, 100, 801]))
+        #print(self.minus_posting([5, 6, 10, 800, 801, 802], [6, 7, 8, 9, 10, 50, 100, 801]))
+        #print("---------")
+        #print(self.and_posting([5, 6, 10, 800, 801, 802], [6, 7, 8, 9, 10, 50, 100, 801]))
+        #print("---------")
+        #print(self.reverse_posting(self.and_posting([5, 6, 10, 800, 801, 802], [6, 7, 8, 9, 10, 50, 100, 801])))
+        #print("---------")
+        #print(self.and_posting([5, 6, 10, 800, 801, 802], self.reverse_posting(self.and_posting([5, 6, 10, 800, 801, 802], [6, 7, 8, 9, 10, 50, 100, 801]))))
         
 
     def index_file(self, filename):
@@ -468,7 +475,9 @@ class SAR_Project:
         res = []
         pID = 0
         for newID in self.news.keys():
-            if not(pID == len(p) or newID >= p[pID]):
+            if pID == len(p):
+                res += [newID]
+            elif not(newID >= p[pID]):
                 res += [newID]
             else:
                 pID += 1
@@ -577,9 +586,26 @@ class SAR_Project:
         return: posting list con los newid incluidos de p1 y no en p2
 
         """
+        #[5, 6, 10, 800, 801, 802], [6, 7, 8, 9, 10, 50, 100, 801]
 
+        res = []
+        p1ID = 0
+        p2ID = 0
+        while p1ID < len(p1) and p2ID < len(p2):
+            if p1[p1ID] == p2[p2ID]:
+                p1ID += 1
+                p2ID += 2
+            elif p1[p1ID] < p2[p2ID]:
+                res += [p1[p1ID]]
+                p1ID += 1
+            else:
+                p2ID += 1
         
-        pass
+        while p1ID < len(p1):
+            res += [p1[p1ID]]
+            p1ID += 1
+        
+        return res
         ########################################################
         ## COMPLETAR PARA TODAS LAS VERSIONES SI ES NECESARIO ##
         ########################################################
