@@ -161,6 +161,7 @@ class SAR_Project:
         #print(self.index)
         #print(self.reverse_posting([5, 6, 10, 800, 801, 802]))
         #print(self.and_posting([5, 6, 10, 800, 801, 802], [6, 7, 8, 9, 10, 50, 100, 801]))
+        print(self.or_posting([5, 6, 10, 800, 801, 802], [6, 7, 8, 9, 10, 50, 100, 801]))
         
 
     def index_file(self, filename):
@@ -534,8 +535,30 @@ class SAR_Project:
 
         """
 
+        res = []
+        p1ID = 0
+        p2ID = 0
+        while p1ID < len(p1) and p2ID < len(p2):
+            if p1[p1ID] == p2[p2ID]:
+                res += [p1[p1ID]]
+                p1ID += 1
+                p2ID += 1
+            elif p1[p1ID] < p2[p2ID]:
+                res += [p1[p1ID]]
+                p1ID += 1
+            else:
+                res += [p2[p2ID]]
+                p2ID += 1
         
-        pass
+        while p1ID < len(p1):
+            res += [p1[p1ID]]
+            p1ID += 1
+        while p2ID < len(p2):
+            res += [p2[p2ID]]
+            p2ID += 1
+        
+        return res
+
         ########################################
         ## COMPLETAR PARA TODAS LAS VERSIONES ##
         ########################################
