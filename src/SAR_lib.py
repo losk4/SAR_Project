@@ -260,7 +260,7 @@ class SAR_Project:
         ####################################################
         ## COMPLETAR PARA FUNCIONALIDAD EXTRA DE STEMMING ##
         ####################################################
-        for(token in self.index):
+        for token in self.index :
             stem = self.stemmer.stem(token)
 
             if(stem in self.sindex):
