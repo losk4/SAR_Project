@@ -1,5 +1,5 @@
 import json
-# from nltk.stem.snowball import SnowballStemmer
+from nltk.stem.snowball import SnowballStemmer
 import os
 import re
 
@@ -345,7 +345,7 @@ class SAR_Project:
 
         while aux < lon:
             if querylist[aux] == 'NOT':
-                res = self.reverse_posting(self.index[querylist[aux+1]])
+                res = self.reverse_posting(self.get_posting(querylist[aux+1]))
                 if aux + 2 == lon:
                     return res
                 aux += 2 
@@ -357,19 +357,19 @@ class SAR_Project:
             else:
                 if querylist[aux] == 'AND':
                     if querylist[aux+1] == 'NOT':
-                        no = self.reverse_posting(self.index[querylist[aux+2]])
+                        no = self.reverse_posting(self.get_posting(querylist[aux+2]))
                         res = self.and_posting(res, no)
                         aux += 3
                     else:
-                        res = self.and_posting(res, self.index[querylist[aux+1]])
+                        res = self.and_posting(res, self.get_posting(querylist[aux+1]))
                         aux += 2
                 if querylist[aux] == 'OR':
                     if querylist[aux+1] == 'NOT':
-                        no = self.reverse_posting(self.index[querylist[aux+2]])
+                        no = self.reverse_posting(self.get_posting(querylist[aux+2]))
                         res = self.or_posting(res, no)
                         aux += 3
                     else:
-                        res = self.or_posting(res, self.index[querylist[aux+1]])
+                        res = self.or_posting(res, self.get_posting(querylist[aux+1]))
                         aux += 2
                 if querylist[aux] != 'OR' and querylist[aux] != 'AND':
                     res = self.get_posting(querylist[aux])
@@ -400,8 +400,13 @@ class SAR_Project:
         ########################################
         result = []
 
-        if(term in self.index):
-            result = self.index[term]
+        if(self.use_stemming):
+            result = self.get_stemming(term)
+
+        else:
+            if(term in self.index):
+                result = self.index[term]
+
         return result
 
 
@@ -438,9 +443,18 @@ class SAR_Project:
         
         stem = self.stemmer.stem(term)
 
+        lista = self.sindex[stem]
+        lon = len(lista)
+        res = []
+        aux = 0
         ####################################################
         ## COMPLETAR PARA FUNCIONALIDAD EXTRA DE STEMMING ##
         ####################################################
+        while aux < lon:
+            res = self.or_posting(res,self.index[lista[aux]])
+            aux += 1
+
+        return res
 
 
     def get_permuterm(self, term, field='article'):
