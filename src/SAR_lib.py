@@ -45,7 +45,7 @@ class SAR_Project:
         self.weight = {} # hash de terminos para el pesado, ranking de resultados. puede no utilizarse
         self.news = {} # hash de noticias --> clave entero (newid), valor: la info necesaria para diferenciar la noticia dentro de su fichero (doc_id y posición dentro del documento)
         self.tokenizer = re.compile("\W+") # expresion regular para hacer la tokenizacion
-        # self.stemmer = SnowballStemmer('spanish') # stemmer en castellano
+        self.stemmer = SnowballStemmer('spanish') # stemmer en castellano
         self.show_all = False # valor por defecto, se cambia con self.set_showall()
         self.show_snippet = False # valor por defecto, se cambia con self.set_snippet()
         self.use_stemming = False # valor por defecto, se cambia con self.set_stemming()
@@ -256,10 +256,19 @@ class SAR_Project:
 
         """
         
-        pass
+        
         ####################################################
         ## COMPLETAR PARA FUNCIONALIDAD EXTRA DE STEMMING ##
         ####################################################
+        for(token in self.index):
+            stem = self.stemmer.stem(token)
+
+            if(stem in self.sindex):
+                if(token in self.sindex[stem]):
+                    self.sindex[stem].append(token)
+
+            else:
+                self.sindex[stem] = token        
 
 
     
@@ -342,7 +351,7 @@ class SAR_Project:
                 aux += 2 
 
             elif aux + 1 == lon:
-                res = self.get_posting(self.index[querylist[aux]])
+                res = self.get_posting(querylist[aux])
                 return res
                            
             else:
@@ -363,7 +372,7 @@ class SAR_Project:
                         res = self.or_posting(res, self.index[querylist[aux+1]])
                         aux += 2
                 if querylist[aux] != 'OR' and querylist[aux] != 'AND':
-                    res = self.get_posting(self.index[querylist[aux]])
+                    res = self.get_posting(querylist[aux])
                     aux += 1
                     
         return res
@@ -385,11 +394,15 @@ class SAR_Project:
         return: posting list
 
         """
-        pass
+        
         ########################################
         ## COMPLETAR PARA TODAS LAS VERSIONES ##
         ########################################
+        result = []
 
+        if(term in self.index):
+            result = self.index[term]
+        return result
 
 
     def get_positionals(self, terms, field='article'):
