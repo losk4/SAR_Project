@@ -167,7 +167,7 @@ class SAR_Project:
         #print(self.and_posting([5, 6, 10, 800, 801, 802], [6, 7, 8, 9, 10, 50, 100, 801]))
         #print("---------")
         #print(self.reverse_posting(self.and_posting([5, 6, 10, 800, 801, 802], [6, 7, 8, 9, 10, 50, 100, 801])))
-        # print("---------")
+        #print("---------")
         #print(self.and_posting([5, 6, 10, 800, 801, 802], self.reverse_posting(self.and_posting([5, 6, 10, 800, 801, 802], [6, 7, 8, 9, 10, 50, 100, 801]))))
         
 
@@ -409,8 +409,7 @@ class SAR_Project:
                     if tuple[i] == 'OR':
                         qAnswer = self.or_posting(qAnswer, temp)        
                     i -= 1
-
-        print(qAnswer) 
+                    
         return qAnswer
 
 
@@ -723,9 +722,20 @@ class SAR_Project:
         ########################################
         ## COMPLETAR PARA TODAS LAS VERSIONES ##
         ########################################
+        n = 0
+        for newID in result:
+            filename = self.docs[self.news[newID][0]]
+            position = self.news[newID][1]
 
+            with open(filename) as fh:
+                jlist = json.load(fh)
+                date = jlist[position - 1]["date"]
+                title = jlist[position - 1]["title"]
+                keywords = jlist[position - 1]["keywords"]
+                score = 0
+                n += 1
 
-
+                print("#"+str(n)+"\t"+"("+str(score)+") ("+str(newID)+") ("+date+") "+title+"\t("+keywords+")")
 
     def rank_result(self, result, query):
         """
