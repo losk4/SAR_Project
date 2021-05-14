@@ -208,7 +208,7 @@ class SAR_Project:
         Proceso de indexado:
         self.docs = {clave: docID, valor: filename}
         self.news = {clave: newID, valor: [docID, pos]}
-        self.index = {clave: término, valor: [(docID)*] (la posting list básicamente)}
+        self.index = {clave: término, valor: [(newID)*] (la posting list básicamente)}
         Los ID's empiezan en 1 por defecto
         """
         pos = 1
@@ -264,11 +264,12 @@ class SAR_Project:
             stem = self.stemmer.stem(token)
 
             if(stem in self.sindex):
+                # Alexey: no faltaría un "not"? O sea, relacionar el término con su correspondiente stem si todavía NO lo está.
                 if(token in self.sindex[stem]):
                     self.sindex[stem].append(token)
 
             else:
-                self.sindex[stem] = token        
+                self.sindex[stem] = token    
 
 
     
@@ -338,6 +339,7 @@ class SAR_Project:
         ########################################
         ## COMPLETAR PARA TODAS LAS VERSIONES ##
         ########################################
+        """
         querylist= query.split()
         lon = len(querylist)
         aux = 0
@@ -376,6 +378,41 @@ class SAR_Project:
                     aux += 1
                     
         return res
+        """
+        qTokens = query.split()
+        qList = []
+        qTuple = []
+        qAnswer = []
+
+        for token in qTokens:
+            if token == 'NOT' or token == 'AND' or token == 'OR':
+                qTuple.append(token)
+            else:
+                qTuple.append(token)
+                qList.append(qTuple)
+                qTuple = []
+
+        temp = []
+        for tuple in qList:
+            tupleLength = len(tuple)
+            i = tupleLength - 1
+            temp = self.get_posting(tuple[tupleLength - 1])
+
+            if(tupleLength == 1):
+                qAnswer = temp
+            else:
+                while i >= 0:
+                    if tuple[i] == 'NOT':
+                        temp = self.reverse_posting(temp)
+                    if tuple[i] == 'AND':
+                        qAnswer = self.and_posting(qAnswer, temp)
+                    if tuple[i] == 'OR':
+                        qAnswer = self.or_posting(qAnswer, temp)        
+                    i -= 1
+
+        print(qAnswer) 
+        return qAnswer
+
 
     def get_posting(self, term, field='article'):
         """
