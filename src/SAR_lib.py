@@ -395,7 +395,7 @@ class SAR_Project:
         temp = []
         for tuple in qList:
             tupleLength = len(tuple)
-            i = tupleLength - 1
+            i = tupleLength - 2
             temp = self.get_posting(tuple[tupleLength - 1])
 
             if(tupleLength == 1):
@@ -404,12 +404,14 @@ class SAR_Project:
                 while i >= 0:
                     if tuple[i] == 'NOT':
                         temp = self.reverse_posting(temp)
-                    if tuple[i] == 'AND':
+                        if(tupleLength == 2):
+                            qAnswer = temp
+                    elif tuple[i] == 'AND':
                         qAnswer = self.and_posting(qAnswer, temp)
-                    if tuple[i] == 'OR':
-                        qAnswer = self.or_posting(qAnswer, temp)        
+                    elif tuple[i] == 'OR':
+                        qAnswer = self.or_posting(qAnswer, temp)       
                     i -= 1
-                    
+
         return qAnswer
 
 
