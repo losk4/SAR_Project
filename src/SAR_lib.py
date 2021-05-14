@@ -153,6 +153,9 @@ class SAR_Project:
                     fullname = os.path.join(dir, filename)
                     self.index_file(fullname)
 
+
+        if self.stemming:
+            self.make_stemming()
         ##########################################
         ## COMPLETAR PARA FUNCIONALIDADES EXTRA ##
         ##########################################
@@ -228,6 +231,7 @@ class SAR_Project:
             self.newID += 1
         self.docID += 1
 
+        
 
 
     def tokenize(self, text):
@@ -265,11 +269,12 @@ class SAR_Project:
 
             if(stem in self.sindex):
                 # Alexey: no faltaría un "not"? O sea, relacionar el término con su correspondiente stem si todavía NO lo está.
-                if(token in self.sindex[stem]):
-                    self.sindex[stem].append(token)
+                if(token not in self.sindex[stem]):
+                    self.sindex[stem].append(token) 
 
             else:
-                self.sindex[stem] = token    
+                lista = [token]
+                self.sindex[stem] = lista    
 
 
     
@@ -307,6 +312,11 @@ class SAR_Project:
         print("TOKENS:")
         print("\t # of tokens in 'article': " + str(len(self.index)))
         print("----------------------------------------")
+        if self.stemming:
+            print("STEMS:")
+            ##self.make_stemming()
+            print(self.sindex)
+            print("\t # of stems in 'article': " + str(len(self.sindex)))
         print("========================================")
         
 
@@ -439,7 +449,8 @@ class SAR_Project:
         result = []
 
         if(self.use_stemming):
-            result = self.get_stemming(term)
+            if term in self.index:
+                result = self.get_stemming(term)
 
         else:
             if(term in self.index):
@@ -481,7 +492,11 @@ class SAR_Project:
         
         stem = self.stemmer.stem(term)
 
-        lista = self.sindex[stem]
+        if stem in self.sindex.keys():           
+            lista = self.sindex[stem]
+        else:
+            return []
+
         lon = len(lista)
         res = []
         aux = 0
@@ -491,7 +506,6 @@ class SAR_Project:
         while aux < lon:
             res = self.or_posting(res,self.index[lista[aux]])
             aux += 1
-
         return res
 
 
