@@ -154,11 +154,18 @@ class SAR_Project:
                     self.index_file(fullname)
 
 
-        if self.stemming:
-            self.make_stemming()
+        
+
         ##########################################
         ## COMPLETAR PARA FUNCIONALIDADES EXTRA ##
         ##########################################
+
+        if self.stemming:
+            self.make_stemming()
+
+        if self.permuterm:
+            self.make_permuterm()
+
         #print(self.docs)
         #print(self.news)
         #print(self.index)
@@ -285,13 +292,51 @@ class SAR_Project:
         Crea el indice permuterm (self.ptindex) para los terminos de todos los indices.
 
         """
-        pass
         ####################################################
         ## COMPLETAR PARA FUNCIONALIDAD EXTRA DE STEMMING ##
         ####################################################
+        """
+        for token in self.index:
+            lon = len(token)
+            aux = 0
+            primero = ''
+            segundo= ''
+            encontrado = False
 
+            while aux < lon:
+                if not encontrado:    
+                    primero += token[aux]
+                else:
+                    segundo += token[aux]
 
+                if token[aux] == '?' or token[aux] == '*':
+                    encontrado = True
+        """
+        for token in self.index:
+            lon = len(token)
+            aux = 0
+            
+            perm = token + '$'
 
+            if perm in self.ptindex:
+                if token not in self.ptindex[perm]:
+                    self.ptindex[perm].append(token)
+            else:
+                lista = [token]
+                self.ptindex[perm] = lista 
+
+            while aux < lon: 
+                perm =  perm[1:] + perm[0]
+
+                if perm in self.ptindex:
+                    if token not in self.ptindex[perm]:
+                        self.ptindex[perm].append(token)
+                else:
+                    lista = [token]
+                    self.ptindex[perm] = lista 
+
+                aux+=1
+                
 
     def show_stats(self):
         """
@@ -312,10 +357,18 @@ class SAR_Project:
         print("TOKENS:")
         print("\t # of tokens in 'article': " + str(len(self.index)))
         print("----------------------------------------")
+
+        if self.permuterm:
+            print("PERMUTERMS:")
+            ##print(self.ptindex)
+            print("\t # of permuters in 'article': " + str(len(self.ptindex)))
+
+        print("----------------------------------------")
+
         if self.stemming:
             print("STEMS:")
             ##self.make_stemming()
-            print(self.sindex)
+            ##print(self.sindex)
             print("\t # of stems in 'article': " + str(len(self.sindex)))
         print("========================================")
         
@@ -451,6 +504,10 @@ class SAR_Project:
         if(self.use_stemming):
             if term in self.index:
                 result = self.get_stemming(term)
+        
+        if ('*' in term) or ('?' in term):
+            
+                result = self.get_permuterm(term)
 
         else:
             if(term in self.index):
@@ -525,7 +582,50 @@ class SAR_Project:
         ##################################################
         ## COMPLETAR PARA FUNCIONALIDAD EXTRA PERMUTERM ##
         ##################################################
+        perm = ''
+        print(self.ptindex)
 
+        if ('*' not in term) or ('?' not in term):
+            perm = term + '$'
+        else:
+            if '*' in term:
+                posicion = term.index('*')
+
+            if '?' in term:
+                posicion = term.index('?')    
+
+            if posicion == 0:
+                # term + '$' 
+                patron = term +'$.' 
+                for clave in self.ptindex:
+                    if re.search(patron, clave):
+                        perm = clave
+
+            elif posicion == len(term) - 1 :
+                #  '$' + term 
+                patron = '$' + term + '.' 
+                for clave in self.ptindex:
+                    if re.search(patron, clave):
+                        perm = clave
+            else:  
+                patron = term[posicion+1:] + '$' + term[0:posicion - 1] + '.'
+                for clave in self.ptindex:
+                    if re.search(patron, clave):
+                        perm = clave
+
+        if perm in self.ptindex.keys():           
+            lista = self.ptindex[perm]
+        else:
+            return []
+
+        lon = len(lista)
+        res = []
+        aux = 0
+        
+        while aux < lon:
+            res = self.or_posting(res,self.index[lista[aux]])
+            aux += 1
+        return res
 
 
 
