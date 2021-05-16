@@ -24,7 +24,7 @@ class SAR_Project:
     
     
     # numero maximo de documento a mostrar cuando self.show_all es False
-    SHOW_MAX = 10
+    SHOW_MAX = 100
 
 
     def __init__(self):
@@ -739,9 +739,25 @@ class SAR_Project:
         ## COMPLETAR PARA TODAS LAS VERSIONES ##
         ########################################
         n = 0
+        print("========================================")
+        print("Query: '" + query + "'")
+        print("Number of results: " + str(len(result)))
+        print("------------------------")
+
+        # Simplificar usando regex!
+        if self.show_snippet:
+            terms = []
+            qList = query.split()
+            for token in qList:
+                if token != "NOT" and token != "AND" and token != "OR":
+                    terms.append(token)
+
         for newID in result:
             filename = self.docs[self.news[newID][0]]
             position = self.news[newID][1]
+
+            if not self.show_all and n > self.SHOW_MAX - 1:
+                break
 
             with open(filename) as fh:
                 jlist = json.load(fh)
@@ -751,7 +767,33 @@ class SAR_Project:
                 score = 0
                 n += 1
 
-                print("#"+str(n)+"\t"+"("+str(score)+") ("+str(newID)+") ("+date+") "+title+"\t("+keywords+")")
+                if self.show_snippet:
+                    content = jlist[position - 1]["article"]
+                    snippet = None
+                    print("#" + str(n))
+                    print("Score: " + str(score))
+                    print(str(newID))
+                    print("Date: " + date)
+                    print("Title: " + title)
+                    print("Keywords: " + keywords)
+
+                    for term in terms:
+                        tokens = self.tokenize(content)
+                        try:
+                            index = tokens.index(term)
+                            if index - 5 >= 0:
+                                print("..." + ' '.join(tokens[index - 5:index + 5]) + "...")
+                            else:
+                                print("..." + ' '.join(tokens[index:index + 10]) + "...")
+                        except ValueError:
+                                print("...TERM (" + term + ") NOT IN ARTICLE CONTENT...")
+
+                    print("------------------------")
+                else:
+                    print("#"+str(n)+"\t"+"("+str(score)+") ("+str(newID)+") ("+date+") "+title+"\t("+keywords+")")
+                    
+        return len(result)
+
 
     def rank_result(self, result, query):
         """
