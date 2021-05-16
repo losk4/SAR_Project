@@ -316,7 +316,7 @@ class SAR_Project:
             lon = len(token)
             aux = 0
             
-            perm = token + '$'
+            perm = token + '*'
 
             if perm in self.ptindex:
                 if token not in self.ptindex[perm]:
@@ -501,13 +501,12 @@ class SAR_Project:
         ########################################
         result = []
 
-        if(self.use_stemming):
+        if('*' in term) or ('?' in term):
+                result = self.get_permuterm(term)
+
+        elif(self.use_stemming):
             if term in self.index:
                 result = self.get_stemming(term)
-        
-        if ('*' in term) or ('?' in term):
-            
-                result = self.get_permuterm(term)
 
         else:
             if(term in self.index):
@@ -582,41 +581,77 @@ class SAR_Project:
         ##################################################
         ## COMPLETAR PARA FUNCIONALIDAD EXTRA PERMUTERM ##
         ##################################################
-        perm = ''
-        print(self.ptindex)
+        perm = []
 
-        if ('*' not in term) or ('?' not in term):
+        if ('*' not in term) and ('?' not in term):
             perm = term + '$'
+            print('1')
         else:
             if '*' in term:
+                varias = True
                 posicion = term.index('*')
+                print('2')
 
             if '?' in term:
+                varias = False
                 posicion = term.index('?')    
-
+                print('3')
+            """
             if posicion == 0:
                 # term + '$' 
-                patron = term +'$.' 
+                print('4')
+                patron = term[1:] +'*.' 
+                print(patron)
                 for clave in self.ptindex:
                     if re.search(patron, clave):
                         perm = clave
 
             elif posicion == len(term) - 1 :
                 #  '$' + term 
-                patron = '$' + term + '.' 
+                print('5')
+                patron = '*' + term[0:posicion-1] + '.' 
                 for clave in self.ptindex:
                     if re.search(patron, clave):
                         perm = clave
-            else:  
-                patron = term[posicion+1:] + '$' + term[0:posicion - 1] + '.'
-                for clave in self.ptindex:
-                    if re.search(patron, clave):
-                        perm = clave
+            else: 
+                """
+            if varias: 
+                patron = term[posicion+1:] + '*' + term[0:posicion]
+                for clave in self.ptindex.keys():
+                    if len(patron) <= len(clave) - 1:
+                        encontrado = True
+                        lon_p = len(patron)
+                        aux2 = 0
+                        while (aux2 < lon_p) and (aux2 < len(clave)):
+                            if patron[aux2] != clave[aux2]:
+                                encontrado = False
+                            aux2 += 1
+                    
+                        if encontrado:
+                            perm.append(clave) 
 
-        if perm in self.ptindex.keys():           
-            lista = self.ptindex[perm]
-        else:
-            return []
+            else:
+                patron = term[posicion+1:] + '*' + term[0:posicion]
+                for clave in self.ptindex.keys():
+                    if len(patron) == len(clave) - 1:
+                        encontrado = True
+                        lon_p = len(patron)
+                        aux2 = 0
+                        while (aux2 < lon_p) and (aux2 < len(clave)):
+                            if patron[aux2] != clave[aux2]:
+                                encontrado = False
+                            aux2 += 1
+                    
+                        if encontrado:
+                            perm.append(clave) 
+
+        lista =[]
+
+        for p in perm:
+            if p in self.ptindex.keys():           
+                lista += self.ptindex[p]
+            else:
+                return []
 
         lon = len(lista)
         res = []
