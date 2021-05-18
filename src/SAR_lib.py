@@ -2,6 +2,7 @@ import json
 from nltk.stem.snowball import SnowballStemmer
 import os
 import re
+import math
 
 
 class SAR_Project:
@@ -585,17 +586,17 @@ class SAR_Project:
 
         if ('*' not in term) and ('?' not in term):
             perm = term + '$'
-            print('1')
+            #print('1')
         else:
             if '*' in term:
                 varias = True
                 posicion = term.index('*')
-                print('2')
+                #print('2')
 
             if '?' in term:
                 varias = False
                 posicion = term.index('?')    
-                print('3')
+                #print('3')
             """
             if posicion == 0:
                 # term + '$' 
@@ -867,8 +868,9 @@ class SAR_Project:
         
         """
         result = self.solve_query(query)
-        if self.use_ranking:
-            result = self.rank_result(result, query)   
+
+        for i, r in enumerate(result):
+            result[i] = [0,r] 
 
         ########################################
         ## COMPLETAR PARA TODAS LAS VERSIONES ##
@@ -879,15 +881,19 @@ class SAR_Project:
         print("Number of results: " + str(len(result)))
         print("------------------------")
 
+        terms = []
+        qList = query.split()
         # Simplificar usando regex!
-        if self.show_snippet:
-            terms = []
-            qList = query.split()
-            for token in qList:
-                if token != "NOT" and token != "AND" and token != "OR":
-                    terms.append(token)
+        for token in qList:
+            if token != "NOT" and token != "AND" and token != "OR":
+                terms.append(token)
 
-        for newID in result:
+        if self.use_ranking:
+            result = self.rank_result(result, terms)  
+
+        for r in result:
+            score = round(r[0], 2)
+            newID = r[1]
             filename = self.docs[self.news[newID][0]]
             position = self.news[newID][1]
 
@@ -899,7 +905,6 @@ class SAR_Project:
                 date = jlist[position - 1]["date"]
                 title = jlist[position - 1]["title"]
                 keywords = jlist[position - 1]["keywords"]
-                score = 0
                 n += 1
 
                 if self.show_snippet:
@@ -943,8 +948,39 @@ class SAR_Project:
         return: la lista de resultados ordenada
 
         """
+        self.weights = {}
 
-        pass
+        for term in query:
+            if term in self.index.keys():
+                idf = math.log10(len(self.news) / len(self.index[term]))
+                self.weight[term] = [1*idf]
+            else:
+                continue
+
+            for r in result:
+                newID = r[1]
+                filename = self.docs[self.news[newID][0]]
+                position = self.news[newID][1]
+
+                with open(filename) as fh:
+                    jlist = json.load(fh)
+                    content = jlist[position - 1]["article"]
+                    tokens = self.tokenize(content)
+                    ftd = tokens.count(term)
+                    tftd = 1 + math.log10(ftd) if (ftd != 0) else 0
+                    wtd = idf * tftd
+                    self.weight[term].append(wtd)
+            
+        scores = []
+        i = 1
+        for r in result:
+            score = 0
+            for term in self.weight.keys():
+                r[0] += self.weight[term][i] * self.weight[term][0]
+            scores.append(score)
+            i += 1
+
+        return sorted(result, reverse=True)
         
         ###################################################
         ## COMPLETAR PARA FUNCIONALIDAD EXTRA DE RANKING ##
