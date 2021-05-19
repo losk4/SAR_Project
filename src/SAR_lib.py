@@ -19,7 +19,7 @@ class SAR_Project:
 
     # lista de campos, el booleano indica si se debe tokenizar el campo
     # NECESARIO PARA LA AMPLIACION MULTIFIELD
-    fields = [("title", True), ("date", False),
+    fields = [("title", True), ("date", True),
               ("keywords", True), ("article", True),
               ("summary", True)]
     
@@ -148,14 +148,17 @@ class SAR_Project:
         self.stemming = args['stem']
         self.permuterm = args['permuterm']
 
+        if self.multifield:
+            for field in self.fields:
+                if field[1]:
+                    self.index[field[0]] = {}
+        self.index["article"] = {}
+
         for dir, subdirs, files in os.walk(root):
             for filename in files:
                 if filename.endswith('.json'):
                     fullname = os.path.join(dir, filename)
                     self.index_file(fullname)
-
-
-        
 
         ##########################################
         ## COMPLETAR PARA FUNCIONALIDADES EXTRA ##
@@ -167,6 +170,7 @@ class SAR_Project:
         if self.permuterm:
             self.make_permuterm()
 
+        #print(self.index['date'].keys())
         #print(self.docs)
         #print(self.news)
         #print(self.index)
@@ -219,7 +223,7 @@ class SAR_Project:
         Proceso de indexado:
         self.docs = {clave: docID, valor: filename}
         self.news = {clave: newID, valor: [docID, pos]}
-        self.index = {clave: término, valor: [(newID)*] (la posting list básicamente)}
+        self.index[field] = {clave: término, valor: [(newID)*] (la posting list básicamente)}
         Los ID's empiezan en 1 por defecto
         """
         pos = 1
@@ -228,18 +232,24 @@ class SAR_Project:
         for new in jlist:
             self.news[self.newID] = [self.docID, pos]
             pos += 1
-            content = new["article"]
-            tokens = set(self.tokenize(content))
 
-            for token in tokens:
-                if token not in self.index.keys():
-                    self.index[token] = []
-                self.index[token].append(self.newID)
+            for field in self.index:
+                content = new[field]
+                tokens = set(self.tokenize(content))
+
+                if field == 'date':
+                    if content not in self.index[field].keys():
+                        self.index[field][content] = []
+                    self.index[field][content].append(self.newID)
+                    continue
+
+                for token in tokens:
+                    if token not in self.index[field].keys():
+                        self.index[field][token] = []
+                    self.index[field][token].append(self.newID)
 
             self.newID += 1
         self.docID += 1
-
-        
 
 
     def tokenize(self, text):
@@ -267,23 +277,23 @@ class SAR_Project:
         self.stemmer.stem(token) devuelve el stem del token
 
         """
-        
-        
         ####################################################
         ## COMPLETAR PARA FUNCIONALIDAD EXTRA DE STEMMING ##
         ####################################################
-        for token in self.index :
-            stem = self.stemmer.stem(token)
 
-            if(stem in self.sindex):
-                # Alexey: no faltaría un "not"? O sea, relacionar el término con su correspondiente stem si todavía NO lo está.
-                if(token not in self.sindex[stem]):
-                    self.sindex[stem].append(token) 
+        for field in self.index:
+            self.sindex[field] = {}
 
-            else:
-                lista = [token]
-                self.sindex[stem] = lista    
+            for token in self.index[field] :
+                stem = self.stemmer.stem(token)
 
+                if(stem in self.sindex[field]):
+                    if(token not in self.sindex[field][stem]):
+                        self.sindex[field][stem].append(token) 
+
+                else:
+                    lista = [token]
+                    self.sindex[field][stem] = lista    
 
     
     def make_permuterm(self):
@@ -313,30 +323,33 @@ class SAR_Project:
                 if token[aux] == '?' or token[aux] == '*':
                     encontrado = True
         """
-        for token in self.index:
-            lon = len(token)
-            aux = 0
-            
-            perm = token + '*'
 
-            if perm in self.ptindex:
-                if token not in self.ptindex[perm]:
-                    self.ptindex[perm].append(token)
-            else:
-                lista = [token]
-                self.ptindex[perm] = lista 
+        for field in self.index:
+            self.ptindex[field] = {}
 
-            while aux < lon: 
-                perm =  perm[1:] + perm[0]
+            for token in self.index[field]:
+                lon = len(token)
+                aux = 0
+                perm = token + '*'
 
-                if perm in self.ptindex:
-                    if token not in self.ptindex[perm]:
-                        self.ptindex[perm].append(token)
+                if perm in self.ptindex[field]:
+                    if token not in self.ptindex[field][perm]:
+                        self.ptindex[field][perm].append(token)
                 else:
                     lista = [token]
-                    self.ptindex[perm] = lista 
+                    self.ptindex[field][perm] = lista 
 
-                aux+=1
+                while aux < lon: 
+                    perm =  perm[1:] + perm[0]
+
+                    if perm in self.ptindex[field]:
+                        if token not in self.ptindex[field][perm]:
+                            self.ptindex[field][perm].append(token)
+                    else:
+                        lista = [token]
+                        self.ptindex[field][perm] = lista 
+
+                    aux+=1
                 
 
     def show_stats(self):
@@ -351,27 +364,32 @@ class SAR_Project:
         ## COMPLETAR PARA TODAS LAS VERSIONES ##
         ########################################
         print("========================================")
-        print("Number of indexed days: " )
+        print("Number of indexed days: " + str(self.docID - 1))
         print("----------------------------------------")
         print("Number of indexed news: " + str(len(self.news)))
         print("----------------------------------------")
         print("TOKENS:")
-        print("\t # of tokens in 'article': " + str(len(self.index)))
+        for field in self.index:
+            print("\t # of tokens in '" + field + "': " + str(len(self.index[field])))
         print("----------------------------------------")
 
         if self.permuterm:
             print("PERMUTERMS:")
-            ##print(self.ptindex)
-            print("\t # of permuters in 'article': " + str(len(self.ptindex)))
-
-        print("----------------------------------------")
+            for field in self.ptindex:
+                print("\t # of tokens in '" + field + "': " + str(len(self.ptindex[field])))
+            print("----------------------------------------")
 
         if self.stemming:
             print("STEMS:")
-            ##self.make_stemming()
-            ##print(self.sindex)
-            print("\t # of stems in 'article': " + str(len(self.sindex)))
+            for field in self.sindex:
+                print("\t # of tokens in '" + field + "': " + str(len(self.sindex[field])))
+            print("----------------------------------------")
         print("========================================")
+
+        if self.positional:
+            print("Positional queries are allowed.")
+        else:
+            print("Positional queries are NOT allowed.")
         
 
     ###################################
@@ -403,46 +421,7 @@ class SAR_Project:
         ########################################
         ## COMPLETAR PARA TODAS LAS VERSIONES ##
         ########################################
-        """
-        querylist= query.split()
-        lon = len(querylist)
-        aux = 0
-        res = []
 
-        while aux < lon:
-            if querylist[aux] == 'NOT':
-                res = self.reverse_posting(self.get_posting(querylist[aux+1]))
-                if aux + 2 == lon:
-                    return res
-                aux += 2 
-
-            elif aux + 1 == lon:
-                res = self.get_posting(querylist[aux])
-                return res
-                           
-            else:
-                if querylist[aux] == 'AND':
-                    if querylist[aux+1] == 'NOT':
-                        no = self.reverse_posting(self.get_posting(querylist[aux+2]))
-                        res = self.and_posting(res, no)
-                        aux += 3
-                    else:
-                        res = self.and_posting(res, self.get_posting(querylist[aux+1]))
-                        aux += 2
-                if querylist[aux] == 'OR':
-                    if querylist[aux+1] == 'NOT':
-                        no = self.reverse_posting(self.get_posting(querylist[aux+2]))
-                        res = self.or_posting(res, no)
-                        aux += 3
-                    else:
-                        res = self.or_posting(res, self.get_posting(querylist[aux+1]))
-                        aux += 2
-                if querylist[aux] != 'OR' and querylist[aux] != 'AND':
-                    res = self.get_posting(querylist[aux])
-                    aux += 1
-                    
-        return res
-        """
         qTokens = query.split()
         qList = []
         qTuple = []
@@ -459,12 +438,17 @@ class SAR_Project:
         temp = []
         for tuple in qList:
             tupleLength = len(tuple)
-            i = tupleLength - 2
-            temp = self.get_posting(tuple[tupleLength - 1])
+            mtuple = tuple[tupleLength - 1].split(':') 
 
+            if len(mtuple) != 1:
+                temp = self.get_posting(mtuple[1], mtuple[0])
+            else:
+                temp = self.get_posting(mtuple[0])
+            
             if(tupleLength == 1):
                 qAnswer = temp
             else:
+                i = tupleLength - 2
                 while i >= 0:
                     if tuple[i] == 'NOT':
                         temp = self.reverse_posting(temp)
@@ -503,15 +487,15 @@ class SAR_Project:
         result = []
 
         if('*' in term) or ('?' in term):
-                result = self.get_permuterm(term)
+                result = self.get_permuterm(term, field)
 
         elif(self.use_stemming):
-            if term in self.index:
-                result = self.get_stemming(term)
+            if term in self.index[field]:
+                result = self.get_stemming(term, field)
 
         else:
-            if(term in self.index):
-                result = self.index[term]
+            if(term in self.index[field]):
+                result = self.index[field][term]
 
         return result
 
@@ -549,8 +533,8 @@ class SAR_Project:
         
         stem = self.stemmer.stem(term)
 
-        if stem in self.sindex.keys():           
-            lista = self.sindex[stem]
+        if stem in self.sindex[field].keys():           
+            lista = self.sindex[field][stem]
         else:
             return []
 
@@ -561,7 +545,7 @@ class SAR_Project:
         ## COMPLETAR PARA FUNCIONALIDAD EXTRA DE STEMMING ##
         ####################################################
         while aux < lon:
-            res = self.or_posting(res,self.index[lista[aux]])
+            res = self.or_posting(res,self.index[field][lista[aux]])
             aux += 1
         return res
 
@@ -618,7 +602,7 @@ class SAR_Project:
                 """
             if varias: 
                 patron = term[posicion+1:] + '*' + term[0:posicion]
-                for clave in self.ptindex.keys():
+                for clave in self.ptindex[field].keys():
                     if len(patron) <= len(clave) - 1:
                         encontrado = True
                         lon_p = len(patron)
@@ -633,7 +617,7 @@ class SAR_Project:
 
             else:
                 patron = term[posicion+1:] + '*' + term[0:posicion]
-                for clave in self.ptindex.keys():
+                for clave in self.ptindex[field].keys():
                     if len(patron) == len(clave) - 1:
                         encontrado = True
                         lon_p = len(patron)
@@ -649,8 +633,8 @@ class SAR_Project:
         lista =[]
 
         for p in perm:
-            if p in self.ptindex.keys():           
-                lista += self.ptindex[p]
+            if p in self.ptindex[field].keys():           
+                lista += self.ptindex[field][p]
             else:
                 return []
 
@@ -659,7 +643,7 @@ class SAR_Project:
         aux = 0
         
         while aux < lon:
-            res = self.or_posting(res,self.index[lista[aux]])
+            res = self.or_posting(res,self.index[field][lista[aux]])
             aux += 1
         return res
 
@@ -882,11 +866,15 @@ class SAR_Project:
         print("------------------------")
 
         terms = []
-        qList = query.split()
-        # Simplificar usando regex!
-        for token in qList:
+        qTokens = query.split()
+        # Nota: simplificar usando regex.
+        for token in qTokens:
             if token != "NOT" and token != "AND" and token != "OR":
-                terms.append(token)
+                mtoken = token.split(':')
+                if len(mtoken) != 1:
+                    terms.append(mtoken[1])
+                else:
+                    terms.append(mtoken[0])
 
         if self.use_ranking:
             result = self.rank_result(result, terms)  
@@ -951,8 +939,8 @@ class SAR_Project:
         self.weights = {}
 
         for term in query:
-            if term in self.index.keys():
-                idf = math.log10(len(self.news) / len(self.index[term]))
+            if term in self.index['article'].keys():
+                idf = math.log10(len(self.news) / len(self.index['article'][term]))
                 self.weight[term] = [1*idf]
             else:
                 continue
