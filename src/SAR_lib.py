@@ -4,6 +4,8 @@ import os
 import re
 import math
 
+# Miembros: Amando Martínez Vivancos, María Moreno Cifuentes, Gianfranco Pousa Barros, Alexey Mengliev
+# Grupo: 3CO21
 
 class SAR_Project:
     """
@@ -169,21 +171,6 @@ class SAR_Project:
 
         if self.permuterm:
             self.make_permuterm()
-
-        #print(self.index['date'].keys())
-        #print(self.docs)
-        #print(self.news)
-        #print(self.index)
-        #print(self.reverse_posting([5, 6, 10, 800, 801, 802]))
-        #print(self.and_posting([5, 6, 10, 800, 801, 802], [6, 7, 8, 9, 10, 50, 100, 801]))
-        #print(self.or_posting([5, 6, 10, 800, 801, 802], [6, 7, 8, 9, 10, 50, 100, 801]))
-        #print(self.minus_posting([5, 6, 10, 800, 801, 802], [6, 7, 8, 9, 10, 50, 100, 801]))
-        #print("---------")
-        #print(self.and_posting([5, 6, 10, 800, 801, 802], [6, 7, 8, 9, 10, 50, 100, 801]))
-        #print("---------")
-        #print(self.reverse_posting(self.and_posting([5, 6, 10, 800, 801, 802], [6, 7, 8, 9, 10, 50, 100, 801])))
-        #print("---------")
-        #print(self.and_posting([5, 6, 10, 800, 801, 802], self.reverse_posting(self.and_posting([5, 6, 10, 800, 801, 802], [6, 7, 8, 9, 10, 50, 100, 801]))))
         
 
     def index_file(self, filename):
@@ -306,23 +293,6 @@ class SAR_Project:
         ####################################################
         ## COMPLETAR PARA FUNCIONALIDAD EXTRA DE STEMMING ##
         ####################################################
-        """
-        for token in self.index:
-            lon = len(token)
-            aux = 0
-            primero = ''
-            segundo= ''
-            encontrado = False
-
-            while aux < lon:
-                if not encontrado:    
-                    primero += token[aux]
-                else:
-                    segundo += token[aux]
-
-                if token[aux] == '?' or token[aux] == '*':
-                    encontrado = True
-        """
 
         for field in self.index:
             self.ptindex[field] = {}
@@ -431,7 +401,7 @@ class SAR_Project:
             if token == 'NOT' or token == 'AND' or token == 'OR':
                 qTuple.append(token)
             else:
-                qTuple.append(token)
+                qTuple.append(token.lower())
                 qList.append(qTuple)
                 qTuple = []
 
@@ -570,36 +540,15 @@ class SAR_Project:
 
         if ('*' not in term) and ('?' not in term):
             perm = term + '$'
-            #print('1')
         else:
             if '*' in term:
                 varias = True
                 posicion = term.index('*')
-                #print('2')
 
             if '?' in term:
                 varias = False
                 posicion = term.index('?')    
-                #print('3')
-            """
-            if posicion == 0:
-                # term + '$' 
-                print('4')
-                patron = term[1:] +'*.' 
-                print(patron)
-                for clave in self.ptindex:
-                    if re.search(patron, clave):
-                        perm = clave
 
-            elif posicion == len(term) - 1 :
-                #  '$' + term 
-                print('5')
-                patron = '*' + term[0:posicion-1] + '.' 
-                for clave in self.ptindex:
-                    if re.search(patron, clave):
-                        perm = clave
-            else: 
-                """
             if varias: 
                 patron = term[posicion+1:] + '*' + term[0:posicion]
                 for clave in self.ptindex[field].keys():
@@ -664,13 +613,6 @@ class SAR_Project:
 
         """
 
-        #res = []
-        #for newID in self.news.keys():
-        #    if newID not in p:
-        #        res += [newID]
-        #
-        #return res
-
         res = []
         pID = 0
         for newID in self.news.keys():
@@ -701,13 +643,6 @@ class SAR_Project:
         return: posting list con los newid incluidos en p1 y p2
 
         """
-        
-        #res = []
-        #for newID2 in p2:
-        #    if newID2 in p1:
-        #        res += [newID2]
-        #
-        #return res
         
         res = []
         p1ID = 0
@@ -785,7 +720,6 @@ class SAR_Project:
         return: posting list con los newid incluidos de p1 y no en p2
 
         """
-        #[5, 6, 10, 800, 801, 802], [6, 7, 8, 9, 10, 50, 100, 801]
 
         res = []
         p1ID = 0
@@ -914,7 +848,8 @@ class SAR_Project:
                             else:
                                 print("..." + ' '.join(tokens[index:index + 10]) + "...")
                         except ValueError:
-                                print("...TERM (" + term + ") NOT IN ARTICLE CONTENT...")
+                                #print("...TERM (" + term + ") NOT IN ARTICLE CONTENT...")
+                                pass
 
                     print("------------------------")
                 else:
